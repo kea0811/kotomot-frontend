@@ -216,7 +216,7 @@ export default function IntegrationsPage() {
             Integrations
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Connect Koto with your favorite tools and services
+            Connect Kotomot with your favorite tools and services
           </p>
         </div>
 

@@ -17,7 +17,7 @@ export function AuthBrandPanel() {
           <Languages className="h-[18px] w-[18px] text-white" />
         </div>
         <div className="leading-tight">
-          <p className="text-[15px] font-semibold text-zinc-50">Koto</p>
+          <p className="text-[15px] font-semibold text-zinc-50">Kotomot</p>
           <p className="text-[11px] text-zinc-400">Translation Platform</p>
         </div>
       </div>

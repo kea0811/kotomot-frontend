@@ -22,7 +22,7 @@ const SDKS: Record<string, SdkMeta> = {
   },
   'koto-react-native': {
     name: 'React Native SDK',
-    tagline: 'Localize your mobile app with the Koto React Native SDK.',
+    tagline: 'Localize your mobile app with the Kotomot React Native SDK.',
     install: 'npm install @koto/react-native',
   },
 };

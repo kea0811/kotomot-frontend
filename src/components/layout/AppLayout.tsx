@@ -312,7 +312,7 @@ export default function AppLayout({ children }: { children?: React.ReactNode } =
                   </div>
                   <div className="leading-tight">
                     <span className="block text-[15px] font-semibold tracking-tight text-foreground">
-                      Koto
+                      Kotomot
                     </span>
                     <span className="block text-xs text-muted-foreground">
                       Translation Platform

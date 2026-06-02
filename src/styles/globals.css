@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /*
- * Koto design tokens — single source of truth.
+ * Kotomot design tokens — single source of truth.
  * Refined neutral base + one cohesive brand accent (indigo).
  * shadcn-style HSL channels (consumed as hsl(var(--token))).
  */

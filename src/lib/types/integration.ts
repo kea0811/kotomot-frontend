@@ -1,4 +1,4 @@
-// Integration types for Koto
+// Integration types for Kotomot
 export interface SlackIntegration {
   id: string;
   projectId: string;

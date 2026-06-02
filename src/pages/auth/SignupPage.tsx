@@ -114,7 +114,7 @@ export default function SignupPage() {
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand">
                   <Languages className="h-5 w-5 text-brand-foreground" />
                 </div>
-                <span className="text-lg font-semibold tracking-tight text-foreground">Koto</span>
+                <span className="text-lg font-semibold tracking-tight text-foreground">Kotomot</span>
               </div>
 
               <div className="flex flex-col gap-2">

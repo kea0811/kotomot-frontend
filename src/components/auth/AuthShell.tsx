@@ -37,7 +37,7 @@ export function AuthShell({ children, title, subtitle }: AuthShellProps) {
 
         <div className="rounded-2xl border border-border bg-card p-6 shadow-lg sm:p-7">{children}</div>
 
-        <p className="mt-6 text-center text-xs text-muted-foreground">Koto — Translation Platform</p>
+        <p className="mt-6 text-center text-xs text-muted-foreground">Kotomot — Translation Platform</p>
       </div>
     </motion.div>
   );

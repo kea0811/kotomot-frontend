@@ -37,7 +37,7 @@ export default function SetupPage() {
       className="min-h-screen bg-background p-8"
     >
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold mb-2">Koto Setup Guide</h1>
+        <h1 className="text-4xl font-bold mb-2">Kotomot Setup Guide</h1>
         <p className="text-muted-foreground mb-8">
           Follow these steps to configure your translation management system
         </p>
