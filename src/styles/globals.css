@@ -1,0 +1,232 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Koto design tokens — single source of truth.
+ * Refined neutral base + one cohesive brand accent (indigo).
+ * shadcn-style HSL channels (consumed as hsl(var(--token))).
+ */
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 4%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 4%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 4%;
+
+    /* near-black primary action */
+    --primary: 240 6% 10%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 240 6% 10%;
+
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 4% 46%;
+
+    /* subtle neutral hover/selected surface */
+    --accent: 240 5% 96%;
+    --accent-foreground: 240 6% 10%;
+
+    /* the one cohesive accent — indigo */
+    --brand: 243 75% 59%;
+    --brand-foreground: 0 0% 100%;
+    --brand-muted: 243 75% 96%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+    --success: 142 71% 40%;
+    --success-foreground: 0 0% 100%;
+    --warning: 35 92% 45%;
+    --warning-foreground: 0 0% 100%;
+
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 243 75% 59%;
+
+    --radius: 0.625rem;
+
+    /* Modal scrim — always a dark dim, both themes (never lightens). */
+    --overlay: 0 0% 0% / 0.5;
+
+    /* Elevation shadows — soft black in light mode. */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.08), 0 2px 6px -2px rgb(0 0 0 / 0.05);
+    --shadow-lg: 0 12px 28px -6px rgb(0 0 0 / 0.14), 0 6px 12px -6px rgb(0 0 0 / 0.10);
+    --shadow-xl: 0 24px 48px -12px rgb(0 0 0 / 0.18), 0 12px 24px -8px rgb(0 0 0 / 0.12);
+
+    /* legacy runtime theme vars — static defaults so inline-styled
+       components (Toast, CustomSelect, NavigationProgress, …) render
+       before JS and stay aligned with the minimal palette. */
+    --theme-background: #ffffff;
+    --theme-background-secondary: #f4f4f5;
+    --theme-card: #ffffff;
+    --theme-foreground: #0a0a0b;
+    --theme-text: #0a0a0b;
+    --theme-text-secondary: #3f3f46;
+    --theme-muted: #71717a;
+    --theme-text-muted: #71717a;
+    --theme-border: #e4e4e7;
+    --theme-border-light: #f4f4f5;
+    --theme-hover: rgba(99, 102, 241, 0.06);
+    --theme-primary: #4f46e5;
+    --theme-secondary: #6366f1;
+    --theme-accent: #6366f1;
+    --theme-success: #16a34a;
+    --theme-warning: #d97706;
+    --theme-error: #ef4444;
+  }
+
+  .dark {
+    --background: 240 10% 4%;
+    --foreground: 0 0% 98%;
+
+    --card: 240 6% 7%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 240 8% 6%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 6% 10%;
+
+    --secondary: 240 4% 14%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 240 4% 14%;
+    --muted-foreground: 240 5% 65%;
+
+    --accent: 240 4% 16%;
+    --accent-foreground: 0 0% 98%;
+
+    --brand: 234 89% 74%;
+    --brand-foreground: 240 10% 4%;
+    --brand-muted: 243 47% 16%;
+
+    --destructive: 0 63% 50%;
+    --destructive-foreground: 0 0% 98%;
+    --success: 142 60% 50%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 55%;
+    --warning-foreground: 240 10% 4%;
+
+    --border: 240 4% 16%;
+    --input: 240 4% 18%;
+    --ring: 234 89% 74%;
+
+    /* Modal scrim — a touch darker on the near-black canvas. */
+    --overlay: 0 0% 0% / 0.65;
+
+    /* Elevation shadows — deeper in dark mode so cards/modals read as
+       lifted against the near-black canvas (pure-black shadows are
+       invisible on dark backgrounds). */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.4);
+    --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.5), 0 2px 6px -2px rgb(0 0 0 / 0.4);
+    --shadow-lg: 0 16px 40px -8px rgb(0 0 0 / 0.6), 0 8px 16px -8px rgb(0 0 0 / 0.5);
+    --shadow-xl: 0 28px 60px -12px rgb(0 0 0 / 0.7), 0 12px 28px -10px rgb(0 0 0 / 0.55);
+
+    --theme-background: #0a0a0b;
+    --theme-background-secondary: #131316;
+    --theme-card: #131316;
+    --theme-foreground: #fafafa;
+    --theme-text: #fafafa;
+    --theme-text-secondary: #d4d4d8;
+    --theme-muted: #a1a1aa;
+    --theme-text-muted: #a1a1aa;
+    --theme-border: #27272a;
+    --theme-border-light: #1f1f23;
+    --theme-hover: rgba(129, 140, 248, 0.12);
+    --theme-primary: #818cf8;
+    --theme-secondary: #6366f1;
+    --theme-accent: #818cf8;
+    --theme-success: #22c55e;
+    --theme-warning: #f59e0b;
+    --theme-error: #ef4444;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Typographic rhythm for headings */
+  h1, h2, h3, h4 {
+    @apply tracking-tight text-foreground;
+    text-wrap: balance;
+  }
+
+  /* Refined focus ring across the app */
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring/70 ring-offset-2 ring-offset-background;
+  }
+
+  /* Selection */
+  ::selection {
+    background-color: hsl(var(--brand) / 0.18);
+  }
+
+  /* Slim, theme-aware scrollbars */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--border));
+    border-radius: 9999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--muted-foreground) / 0.5);
+  }
+}
+
+@layer utilities {
+  .line-clamp-1 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+  }
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+  .line-clamp-3 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+  /* subtle grid/dotted backdrop helpers for hero/empty states */
+  .bg-grid {
+    background-image:
+      linear-gradient(to right, hsl(var(--border) / 0.6) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--border) / 0.6) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+}
