@@ -6,6 +6,8 @@ import GuestGuard from '@/router/GuestGuard'
 // Lazy-loaded layouts
 const AppLayout = lazy(() => import('@/components/layout/AppLayout'))
 
+// Public landing page
+const LandingPage = lazy(() => import('@/pages/LandingPage'))
 // Lazy-loaded auth pages
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'))
 // Lazy-loaded app pages
@@ -47,10 +49,14 @@ function SuspenseWrapper({ children }: { children: React.ReactNode }) {
 }
 
 export const router = createBrowserRouter([
-  // Root redirect
+  // Public landing page
   {
     path: '/',
-    element: <Navigate to="/projects" replace />,
+    element: (
+      <SuspenseWrapper>
+        <LandingPage />
+      </SuspenseWrapper>
+    ),
   },
 
   // Guest routes (redirect to /projects if already logged in)
