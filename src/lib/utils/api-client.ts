@@ -24,7 +24,13 @@ async function authenticatedFetch(
     headers.set('Content-Type', 'application/json')
   }
 
-  const url = `${API_BASE_URL}${path}`
+  // When VITE_API_URL points directly at the API host (e.g. https://api.kotomot.app),
+  // the backend serves routes at root, so drop the legacy `/api` prefix the call
+  // sites still use. With an empty base (dev / same-origin), keep `/api` so the
+  // Vite / Vercel proxy can match it.
+  const url = API_BASE_URL
+    ? `${API_BASE_URL}${path.replace(/^\/api(?=\/|$)/, '')}`
+    : path
 
   const response = await fetch(url, {
     ...options,

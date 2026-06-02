@@ -1,0 +1,9 @@
+node_modules
+.git
+.vercel
+# Don't upload the local dev .env (its empty VITE_API_URL= would shadow the
+# production value). .env.production is intentionally NOT ignored.
+.env
+.env.local
+.env.*.local
+.env.swp

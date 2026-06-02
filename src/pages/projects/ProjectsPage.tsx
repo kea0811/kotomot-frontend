@@ -18,7 +18,7 @@ interface Project {
   description: string | null;
   created_at: string;
   stats?: {
-    namespaces: number;
+    locales: number;
     keys: number;
     members: number;
     completion: number;
@@ -130,7 +130,7 @@ export default function ProjectsPage() {
                       {project.name}
                     </h3>
                     <span className="shrink-0 rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
-                      {project.stats?.namespaces ?? 0} locales
+                      {project.stats?.locales ?? 0} locales
                     </span>
                   </div>
 

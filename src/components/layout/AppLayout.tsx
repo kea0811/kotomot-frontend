@@ -72,9 +72,10 @@ const navigationGroups: NavGroup[] = [
   {
     label: 'Resources',
     items: [
-      { label: 'Node.js SDK', href: '/docs/nodejs-sdk', icon: Book },
-      { label: 'React SDK', href: '/docs/koto-react', icon: Book },
-      { label: 'React Native SDK', href: '/docs/koto-react-native', icon: Book },
+      { label: 'React SDK', href: '/docs/kotomot-react', icon: Book },
+      { label: 'React Native SDK', href: '/docs/kotomot-react-native', icon: Book },
+      { label: 'Node.js SDK', href: '/docs/kotomot-node-sdk', icon: Book },
+      { label: 'Flutter SDK', href: '/docs/kotomot-flutter', icon: Book },
     ],
   },
 ];

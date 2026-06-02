@@ -6,6 +6,7 @@ import {
   Plus,
   Copy,
   Trash2,
+  Pencil,
   CheckCircle,
   Clock,
   Shield,
@@ -46,6 +47,7 @@ export default function ApiKeysPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newKeyValue, setNewKeyValue] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [editingKey, setEditingKey] = useState<ApiKeyItem | null>(null);
 
   const fetchKeys = async () => {
     try {
@@ -227,13 +229,22 @@ export default function ApiKeysPage() {
                     </div>
                   </div>
                   {key.isActive && (
-                    <button
-                      onClick={() => handleRevoke(key.id)}
-                      className="p-2 text-red-500 hover:bg-red-500/10 rounded"
-                      title="Revoke key"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => setEditingKey(key)}
+                        className="p-2 text-muted-foreground hover:bg-accent hover:text-foreground rounded"
+                        title="Edit name & permissions"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleRevoke(key.id)}
+                        className="p-2 text-red-500 hover:bg-red-500/10 rounded"
+                        title="Revoke key"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
                   )}
                 </div>
               </motion.div>
@@ -265,6 +276,18 @@ export default function ApiKeysPage() {
           <CreateApiKeyModal
             onClose={() => setShowCreateModal(false)}
             onCreated={handleKeyCreated}
+          />
+        )}
+
+        {/* Edit Modal */}
+        {editingKey && (
+          <EditApiKeyModal
+            apiKey={editingKey}
+            onClose={() => setEditingKey(null)}
+            onSaved={() => {
+              setEditingKey(null);
+              fetchKeys();
+            }}
           />
         )}
       </div>
@@ -391,6 +414,132 @@ function CreateApiKeyModal({
             </button>
             <Button type="submit" disabled={submitting || permissions.length === 0}>
               {submitting ? 'Creating...' : 'Create Key'}
+            </Button>
+          </div>
+        </form>
+      </motion.div>
+    </motion.div>,
+    document.body
+  );
+}
+
+function EditApiKeyModal({
+  apiKey,
+  onClose,
+  onSaved,
+}: {
+  apiKey: ApiKeyItem;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const [name, setName] = useState(apiKey.name);
+  const [permissions, setPermissions] = useState<string[]>(apiKey.permissions);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const togglePermission = (perm: string) => {
+    if (perm === 'admin:all') {
+      setPermissions((prev) => (prev.includes('admin:all') ? [] : ['admin:all']));
+      return;
+    }
+    setPermissions((prev) => {
+      const filtered = prev.filter((p) => p !== 'admin:all');
+      return filtered.includes(perm)
+        ? filtered.filter((p) => p !== perm)
+        : [...filtered, perm];
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setError(null);
+    try {
+      const res = await authenticatedFetch(`/api/user/api-keys/${apiKey.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, permissions }),
+      });
+      const data = await res.json();
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to update API key');
+      }
+      onSaved();
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return createPortal(
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-overlay backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        className="bg-card border border-border rounded-xl p-6 max-w-md w-full shadow-lg"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 className="text-xl font-semibold mb-1">Edit API Key</h2>
+        <p className="mb-4 text-xs text-muted-foreground">
+          Update the name and access scopes. The key value itself stays the same.
+        </p>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {error && <p className="text-sm text-red-500">{error}</p>}
+
+          <div>
+            <label htmlFor="editKeyName" className="block text-sm font-medium mb-1">
+              Key Name
+            </label>
+            <input
+              id="editKeyName"
+              type="text"
+              required
+              className="w-full px-3 py-2 bg-background text-foreground border border-input rounded-lg shadow-xs transition-colors focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/30"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">Permissions</label>
+            <div className="space-y-2">
+              {PERMISSION_OPTIONS.map((opt) => (
+                <label
+                  key={opt.value}
+                  className="flex items-center gap-2 text-sm cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    checked={permissions.includes(opt.value) || permissions.includes('admin:all')}
+                    onChange={() => togglePermission(opt.value)}
+                    disabled={opt.value !== 'admin:all' && permissions.includes('admin:all')}
+                    className="rounded border-input"
+                  />
+                  {opt.label}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex gap-3 justify-end">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 border border-input rounded-md hover:bg-accent"
+              disabled={submitting}
+            >
+              Cancel
+            </button>
+            <Button type="submit" disabled={submitting || permissions.length === 0}>
+              {submitting ? 'Saving…' : 'Save changes'}
             </Button>
           </div>
         </form>

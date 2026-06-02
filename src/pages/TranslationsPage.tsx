@@ -106,6 +106,8 @@ export default function TranslationsPage() {
   const [selectedProject, setSelectedProject] = useState<string>('');
   const [completionFilter, setCompletionFilter] = useState<'all' | 'complete' | 'incomplete' | 'missing'>('all');
   const [showLanguageManager, setShowLanguageManager] = useState(false);
+  const [unpublishedCount, setUnpublishedCount] = useState(0);
+  const [publishing, setPublishing] = useState(false);
   const [editingCell, setEditingCell] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
   const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
@@ -198,6 +200,7 @@ export default function TranslationsPage() {
       if (keysResult.success) {
         setTranslationKeys(keysResult.keys || []);
         setEnabledLanguages(keysResult.enabledLanguages || []);
+        setUnpublishedCount(keysResult.unpublishedCount || 0);
         setProjects(keysResult.projects || []);
 
         // Auto-select first project if none selected
@@ -262,6 +265,28 @@ export default function TranslationsPage() {
     setEditValue('');
     setAiSuggestions([]);
     setShowSuggestions(false);
+  };
+
+  const handlePublish = async () => {
+    if (!selectedProject || publishing) return;
+    setPublishing(true);
+    try {
+      const response = await apiClient.post('/api/versions', {
+        projectId: selectedProject,
+        versionType: 'patch',
+      });
+      const result = await handleApiResponse(response);
+      if (result.success) {
+        await fetchData(selectedProject); // refresh → unpublishedCount resets to 0
+      } else {
+        alert('Failed to publish: ' + (result.error || 'unknown error'));
+      }
+    } catch (error: any) {
+      console.error('Publish failed:', error);
+      alert('Failed to publish: ' + (error?.message || 'unknown error'));
+    } finally {
+      setPublishing(false);
+    }
   };
 
   const handleAddTranslationKey = async (key: string, namespace: string, description: string, projectId: string) => {
@@ -606,7 +631,13 @@ export default function TranslationsPage() {
         subtitle="Manage translations across all languages and projects"
         actions={
           <>
-            <Button onClick={() => setShowAddKeyModal(true)}>
+            {unpublishedCount > 0 && (
+              <Button onClick={handlePublish} disabled={publishing} title="Release a version so these changes reach the SDK/app">
+                <CheckCircle className="w-4 h-4" />
+                {publishing ? 'Publishing…' : `Publish ${unpublishedCount} change${unpublishedCount !== 1 ? 's' : ''}`}
+              </Button>
+            )}
+            <Button variant="outline" onClick={() => setShowAddKeyModal(true)}>
               <Plus className="w-4 h-4" />
               Add Key
             </Button>
@@ -638,6 +669,18 @@ export default function TranslationsPage() {
       <div className="bg-card rounded-xl border border-border">
         <div className="p-4">
           <div className="flex flex-col lg:flex-row gap-3">
+            {projects.length > 0 && (
+              <div className="w-full lg:w-56">
+                <Select
+                  value={selectedProject}
+                  onChange={(value) => {
+                    setSelectedProject(value);
+                    setSelectedNamespaces([]);
+                  }}
+                  options={projects.map((p) => ({ value: p.id, label: p.name }))}
+                />
+              </div>
+            )}
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
@@ -836,7 +879,7 @@ export default function TranslationsPage() {
                     : key.status === 'review'
                     ? { label: 'Needs review', cls: 'bg-destructive/10 text-destructive' }
                     : { label: 'Pending', cls: 'bg-warning/10 text-warning' };
-                const sourceText = key.translations[enabledLanguages[0]?.code] || key.description || '';
+                const sourceText = key.translations['en'] || key.description || '';
 
                 return (
                   <button
@@ -897,7 +940,7 @@ export default function TranslationsPage() {
           <TranslationDetailPanel
             translationKey={filteredKeys.find((k) => k.id === selectedKeyId) || null}
             languages={enabledLanguages}
-            sourceLanguageCode={enabledLanguages[0]?.code || 'en'}
+            sourceLanguageCode="en"
             onClose={() => setSelectedKeyId(null)}
             onSave={updateTranslation}
             updating={updatingTranslation}

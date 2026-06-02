@@ -1,7 +1,8 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Plus, MoreHorizontal } from 'lucide-react';
+import { Search, Plus, MoreHorizontal, ChevronLeft, ChevronRight, Copy, Trash2 } from 'lucide-react';
 import { pageVariants } from '@/lib/motion';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -60,58 +61,106 @@ export default function ProjectKeysPage() {
   const toast = useToast();
 
   const [keys, setKeys] = useState<ApiKey[]>([]);
+  const [total, setTotal] = useState(0);
+  const [projectId, setProjectId] = useState<string | null>(null);
   const [languages, setLanguages] = useState<Language[]>([]);
   const [namespaces, setNamespaces] = useState<{ name: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [namespaceFilter, setNamespaceFilter] = useState('all');
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const listScrollRef = useRef<HTMLDivElement>(null);
+  const PAGE_SIZE = 50;
+  const [menu, setMenu] = useState<{ id: string; x: number; y: number } | null>(null);
 
-  const fetchAll = useCallback(async () => {
+  const hasFilters = debouncedSearch !== '' || statusFilter !== 'all' || namespaceFilter !== 'all';
+
+  // Debounce the search box so we don't refetch on every keystroke.
+  useEffect(() => {
+    const t = window.setTimeout(() => setDebouncedSearch(searchQuery), 300);
+    return () => window.clearTimeout(t);
+  }, [searchQuery]);
+
+  // Reset to the first page whenever a filter changes.
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, statusFilter, namespaceFilter]);
+
+  // Project meta + languages + namespaces — loaded once per project.
+  const fetchMeta = useCallback(async () => {
     try {
-      setLoading(true);
       setError(null);
       const projData = await apiClient.get(`/api/projects/${slug}`);
-      const projectId = projData.project?._id;
-      if (!projectId) throw new Error('Project not found');
-
-      const [keysData, langData, nsData] = await Promise.all([
-        apiClient.get(`/api/translations/keys?projectId=${projectId}`),
+      const pid = projData.project?._id;
+      if (!pid) throw new Error('Project not found');
+      setProjectId(pid);
+      const [langData, nsData] = await Promise.all([
         apiClient.get('/api/languages'),
         apiClient.get(`/api/projects/${slug}/namespaces`),
       ]);
-
-      setKeys(keysData.keys || []);
       setLanguages(langData.languages || []);
       setNamespaces(nsData.namespaces || []);
     } catch (err: any) {
-      setError(err.message || 'Failed to load translation keys');
-    } finally {
+      setError(err.message || 'Failed to load project');
       setLoading(false);
     }
   }, [slug]);
 
   useEffect(() => {
-    fetchAll();
-  }, [fetchAll]);
+    fetchMeta();
+  }, [fetchMeta]);
 
-  const sourceLanguageCode = languages[0]?.code || 'en';
+  // Fetch one page of keys from the server whenever project / filters / page change.
+  const fetchKeys = useCallback(async () => {
+    if (!projectId) return;
+    try {
+      setLoading(true);
+      setError(null);
+      const params = new URLSearchParams({
+        projectId,
+        limit: String(PAGE_SIZE),
+        offset: String((page - 1) * PAGE_SIZE),
+      });
+      if (debouncedSearch) params.set('search', debouncedSearch);
+      if (namespaceFilter !== 'all') params.set('namespace', namespaceFilter);
+      if (statusFilter !== 'all') params.set('status', statusFilter);
+      const data = await apiClient.get(`/api/translations/keys?${params.toString()}`);
+      setKeys(data.keys || []);
+      setTotal(data.total ?? (data.keys?.length || 0));
+    } catch (err: any) {
+      setError(err.message || 'Failed to load translation keys');
+    } finally {
+      setLoading(false);
+    }
+  }, [projectId, page, debouncedSearch, namespaceFilter, statusFilter]);
+
+  useEffect(() => {
+    fetchKeys();
+  }, [fetchKeys]);
+
+  const sourceLanguageCode = 'en';
   const totalLangs = languages.length;
 
-  const filteredKeys = useMemo(() => {
-    return keys.filter((key) => {
-      const matchesSearch =
-        key.key.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        key.description?.toLowerCase().includes(searchQuery.toLowerCase());
-      const status = deriveStatus(key.completion);
-      const matchesStatus = statusFilter === 'all' || status === statusFilter;
-      const matchesNamespace = namespaceFilter === 'all' || key.namespace === namespaceFilter;
-      return matchesSearch && matchesStatus && matchesNamespace;
-    });
-  }, [keys, searchQuery, statusFilter, namespaceFilter]);
+  // The server already filtered + paginated; render the returned page as-is.
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const pagedKeys = keys;
+  const rangeStart = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+  const rangeEnd = Math.min(page * PAGE_SIZE, total);
+
+  // Clamp the page if the result set shrank (e.g. after a delete).
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [totalPages, page]);
+
+  // Jump back to the top of the list when the page changes.
+  useEffect(() => {
+    listScrollRef.current?.scrollTo({ top: 0 });
+  }, [page]);
 
   const selectedKeyData = selectedKey ? keys.find((k) => k.id === selectedKey) : null;
 
@@ -150,6 +199,53 @@ export default function ProjectKeysPage() {
       toast.error(err.message || 'Failed to save translation');
     }
   };
+
+  const openMenu = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    setMenu((m) => (m?.id === id ? null : { id, x: r.right, y: r.bottom + 4 }));
+  };
+
+  const handleCopyKey = (id: string) => {
+    const k = keys.find((x) => x.id === id);
+    if (k) navigator.clipboard?.writeText(k.key).then(() => toast.success('Key path copied'));
+    setMenu(null);
+  };
+
+  const handleDeleteKey = async (id: string) => {
+    setMenu(null);
+    const k = keys.find((x) => x.id === id);
+    if (!k) return;
+    if (!window.confirm(`Delete "${k.key}"? This cannot be undone.`)) return;
+    try {
+      await apiClient.delete(`/api/translations/keys?id=${id}`);
+      if (selectedKey === id) setSelectedKey(null);
+      toast.success('Key deleted');
+      fetchKeys();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to delete key');
+    }
+  };
+
+  // Close the row actions menu on outside click, Escape, scroll, or resize.
+  useEffect(() => {
+    if (!menu) return;
+    const close = () => setMenu(null);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMenu(null);
+    };
+    const t = window.setTimeout(() => document.addEventListener('click', close), 0);
+    window.addEventListener('scroll', close, true);
+    window.addEventListener('resize', close);
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.clearTimeout(t);
+      document.removeEventListener('click', close);
+      window.removeEventListener('scroll', close, true);
+      window.removeEventListener('resize', close);
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [menu]);
 
   return (
     <motion.div
@@ -215,10 +311,10 @@ export default function ProjectKeysPage() {
           <div className="flex-1 flex flex-col bg-card border border-border rounded-xl overflow-hidden">
             <div className="flex items-center gap-1.5 px-4 py-3 border-b border-border">
               <span className="text-sm font-semibold text-foreground">Keys</span>
-              <span className="text-sm text-muted-foreground">· {filteredKeys.length}</span>
+              <span className="text-sm text-muted-foreground">· {total}</span>
             </div>
 
-            {loading ? (
+            {loading && keys.length === 0 ? (
               <div className="flex-1 flex items-center justify-center py-16 text-sm text-muted-foreground">
                 Loading keys…
               </div>
@@ -229,17 +325,17 @@ export default function ProjectKeysPage() {
                 description={error}
                 className="py-16"
               />
-            ) : filteredKeys.length === 0 ? (
+            ) : keys.length === 0 ? (
               <EmptyState
                 icon={Search}
-                title={keys.length === 0 ? 'No keys yet' : 'No matching keys'}
+                title={hasFilters ? 'No matching keys' : 'No keys yet'}
                 description={
-                  keys.length === 0
-                    ? 'Create your first translation key to get started.'
-                    : 'Try adjusting your search or filters.'
+                  hasFilters
+                    ? 'Try adjusting your search or filters.'
+                    : 'Create your first translation key to get started.'
                 }
                 action={
-                  keys.length === 0 ? (
+                  !hasFilters ? (
                     <Button asChild>
                       <Link to={`/projects/${slug}/keys/new`}>
                         <Plus className="h-4 w-4" />
@@ -251,7 +347,7 @@ export default function ProjectKeysPage() {
                 className="py-16"
               />
             ) : (
-              <div className="flex-1 overflow-y-auto">
+              <div ref={listScrollRef} className="flex-1 overflow-y-auto">
                 {/* Column header */}
                 <div className="flex items-center gap-4 px-4 py-2 border-b border-border sticky top-0 bg-card z-10">
                   <span className="flex-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Key</span>
@@ -261,7 +357,7 @@ export default function ProjectKeysPage() {
                   <span className="w-8" />
                 </div>
 
-                {filteredKeys.map((key) => {
+                {pagedKeys.map((key) => {
                   const selected = key.id === selectedKey;
                   const done = Object.values(key.translations).filter((t) => (t || '').trim() !== '').length;
                   const pct = key.completion;
@@ -269,11 +365,19 @@ export default function ProjectKeysPage() {
                   const source = key.translations[sourceLanguageCode] || key.description;
 
                   return (
-                    <button
+                    <div
                       key={key.id}
+                      role="button"
+                      tabIndex={0}
                       onClick={() => setSelectedKey(key.id)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setSelectedKey(key.id);
+                        }
+                      }}
                       className={cn(
-                        'w-full flex items-center gap-4 px-4 py-3 border-b border-border text-left transition-colors',
+                        'w-full flex items-center gap-4 px-4 py-3 border-b border-border text-left transition-colors cursor-pointer',
                         selected
                           ? 'bg-brand/5 border-l-2 border-l-brand'
                           : 'border-l-2 border-l-transparent hover:bg-accent/50'
@@ -308,12 +412,49 @@ export default function ProjectKeysPage() {
                         {key.updated_at ? new Date(key.updated_at).toLocaleDateString() : '—'}
                       </div>
 
-                      <div className="w-8 flex justify-center text-muted-foreground">
+                      <button
+                        type="button"
+                        aria-label="Key actions"
+                        onClick={(e) => openMenu(e, key.id)}
+                        className="w-8 h-8 flex items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                      >
                         <MoreHorizontal className="h-4 w-4" />
-                      </div>
-                    </button>
+                      </button>
+                    </div>
                   );
                 })}
+              </div>
+            )}
+
+            {/* Pagination footer */}
+            {!error && total > 0 && (
+              <div className="flex items-center justify-between gap-3 px-4 py-2.5 border-t border-border">
+                <span className="text-xs text-muted-foreground tabular-nums">
+                  {rangeStart}–{rangeEnd} of {total}
+                </span>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={page <= 1 || loading}
+                    className="inline-flex items-center gap-1 h-8 px-2.5 rounded-md text-xs font-medium text-foreground transition-colors hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <ChevronLeft className="h-3.5 w-3.5" />
+                    Prev
+                  </button>
+                  <span className="px-2 text-xs text-muted-foreground tabular-nums">
+                    Page {page} / {totalPages}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={page >= totalPages || loading}
+                    className="inline-flex items-center gap-1 h-8 px-2.5 rounded-md text-xs font-medium text-foreground transition-colors hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    Next
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -339,6 +480,33 @@ export default function ProjectKeysPage() {
           </div>
         </div>
       </div>
+
+      {menu &&
+        createPortal(
+          <div
+            className="fixed z-50 min-w-[160px] overflow-hidden rounded-lg border border-border bg-card py-1 shadow-lg"
+            style={{ top: menu.y, left: menu.x, transform: 'translateX(-100%)' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => handleCopyKey(menu.id)}
+              className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-foreground transition-colors hover:bg-accent"
+            >
+              <Copy className="h-4 w-4" />
+              Copy key path
+            </button>
+            <button
+              type="button"
+              onClick={() => handleDeleteKey(menu.id)}
+              className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-destructive transition-colors hover:bg-destructive/10"
+            >
+              <Trash2 className="h-4 w-4" />
+              Delete key
+            </button>
+          </div>,
+          document.body
+        )}
     </motion.div>
   );
 }

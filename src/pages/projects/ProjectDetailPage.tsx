@@ -14,11 +14,40 @@ import {
   Clock,
   Trash2,
   X,
+  Copy,
+  Check,
 } from 'lucide-react';
 import { pageVariants, listItemVariants } from '@/lib/motion';
 import { authenticatedFetch } from '@/lib/utils/api-client';
 import { StatCard } from '@/components/ui/StatCard';
 import { Button } from '@/components/ui/button';
+
+function CopyValue({ label, value, hint }: { label: string; value: string; hint?: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <div className="flex items-center gap-3">
+      <div className="w-28 shrink-0">
+        <span className="text-xs font-medium text-foreground">{label}</span>
+        {hint && <span className="block text-[11px] text-muted-foreground">{hint}</span>}
+      </div>
+      <code className="flex-1 truncate rounded-md bg-muted px-2.5 py-1.5 text-xs font-mono text-foreground">
+        {value}
+      </code>
+      <button
+        type="button"
+        onClick={() => {
+          navigator.clipboard?.writeText(value);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1500);
+        }}
+        className="inline-flex items-center gap-1 rounded-md border border-input px-2.5 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-accent"
+      >
+        {copied ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+        {copied ? 'Copied' : 'Copy'}
+      </button>
+    </div>
+  );
+}
 
 export default function ProjectDetailPage() {
   const { slug } = useParams();
@@ -140,6 +169,21 @@ export default function ProjectDetailPage() {
                 </button>
               )}
             </div>
+          </div>
+        </div>
+
+        {/* Project ID — for SDK config */}
+        <div className="mb-8 rounded-xl border border-border bg-card p-4">
+          <div className="mb-3 flex flex-wrap items-center gap-x-2 gap-y-1">
+            <h2 className="text-sm font-semibold text-foreground">Project ID</h2>
+            <span className="text-xs text-muted-foreground">
+              Use as <code className="font-mono text-foreground">projectId</code> in the SDK (kotomot-react /
+              kotomot-node), with your API key and <code className="font-mono text-foreground">apiUrl: https://api.kotomot.app</code>.
+            </span>
+          </div>
+          <div className="max-w-2xl space-y-2">
+            <CopyValue label="Project ID" hint="recommended" value={project.slug || slug || ''} />
+            <CopyValue label="Object ID" hint="also accepted" value={(project._id || project.id || '').toString()} />
           </div>
         </div>
 

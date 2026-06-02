@@ -28,9 +28,10 @@ const features = [
 ];
 
 const sdks = [
-  { name: 'kotomot-react', desc: 'React hook + provider with IndexedDB caching.', install: 'npm install kotomot-react' },
-  { name: 'kotomot-react-native', desc: 'React Native client with AsyncStorage persistence.', install: 'npm install kotomot-react-native' },
-  { name: 'kotomot-node-sdk', desc: 'Node.js SDK for servers, CLIs, and build tooling.', install: 'npm install kotomot-node-sdk' },
+  { name: 'kotomot-react', desc: 'React hook + provider with IndexedDB caching.', install: 'npm install kotomot-react', repo: 'kotomot-react', pkg: { label: 'npm', url: 'https://www.npmjs.com/package/kotomot-react' } },
+  { name: 'kotomot-react-native', desc: 'React Native client with AsyncStorage persistence.', install: 'npm install kotomot-react-native', repo: 'kotomot-react-native', pkg: { label: 'npm', url: 'https://www.npmjs.com/package/kotomot-react-native' } },
+  { name: 'kotomot-node-sdk', desc: 'Node.js SDK for servers, CLIs, and build tooling.', install: 'npm install kotomot-node-sdk', repo: 'kotomot-node-sdk', pkg: { label: 'npm', url: 'https://www.npmjs.com/package/kotomot-node-sdk' } },
+  { name: 'kotomot_flutter', desc: 'Flutter/Dart provider — cache-first loading & runtime locale switching.', install: 'flutter pub add kotomot_flutter', repo: 'kotomot-flutter', pkg: null as { label: string; url: string } | null },
 ];
 
 export default function LandingPage() {
@@ -151,7 +152,7 @@ export default function LandingPage() {
             Install a Kotomot SDK, point it at your API URL with a key you generate in the dashboard, and your
             app pulls live translations — no rebuilds.
           </p>
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {sdks.map((s) => (
               <div key={s.name} className="flex flex-col rounded-xl border border-border bg-card p-5">
                 <div className="flex items-center gap-2">
@@ -161,8 +162,10 @@ export default function LandingPage() {
                 <p className="mt-2 flex-1 text-sm text-muted-foreground">{s.desc}</p>
                 <pre className="mt-4 overflow-x-auto rounded-lg bg-muted px-3 py-2 text-xs text-foreground">{s.install}</pre>
                 <div className="mt-3 flex gap-4 text-xs">
-                  <a href={`https://www.npmjs.com/package/${s.name}`} target="_blank" rel="noreferrer" className="font-medium text-brand hover:underline">npm</a>
-                  <a href={`${GH}/${s.name}`} target="_blank" rel="noreferrer" className="font-medium text-brand hover:underline">GitHub</a>
+                  {s.pkg && (
+                    <a href={s.pkg.url} target="_blank" rel="noreferrer" className="font-medium text-brand hover:underline">{s.pkg.label}</a>
+                  )}
+                  <a href={`${GH}/${s.repo}`} target="_blank" rel="noreferrer" className="font-medium text-brand hover:underline">GitHub</a>
                 </div>
               </div>
             ))}

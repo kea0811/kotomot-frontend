@@ -7,23 +7,35 @@ interface SdkMeta {
   name: string;
   tagline: string;
   install: string;
+  repo: string;
 }
 
+const GH = 'https://github.com/kea0811';
+
 const SDKS: Record<string, SdkMeta> = {
-  'nodejs-sdk': {
-    name: 'Node.js SDK',
-    tagline: 'Server-side translation management for Node.js applications.',
-    install: 'npm install @koto/node',
-  },
-  'koto-react': {
+  'kotomot-react': {
     name: 'React SDK',
-    tagline: 'Hooks and components to load and render translations in React.',
-    install: 'npm install @koto/react',
+    tagline: 'Hooks and a provider to load and render translations in React, with IndexedDB caching.',
+    install: 'npm install kotomot-react',
+    repo: 'kotomot-react',
   },
-  'koto-react-native': {
+  'kotomot-react-native': {
     name: 'React Native SDK',
-    tagline: 'Localize your mobile app with the Kotomot React Native SDK.',
-    install: 'npm install @koto/react-native',
+    tagline: 'Localize your mobile app, with AsyncStorage-backed offline caching.',
+    install: 'npm install kotomot-react-native',
+    repo: 'kotomot-react-native',
+  },
+  'kotomot-node-sdk': {
+    name: 'Node.js SDK',
+    tagline: 'Server-side translation management for Node.js apps, CLIs, and build tooling.',
+    install: 'npm install kotomot-node-sdk',
+    repo: 'kotomot-node-sdk',
+  },
+  'kotomot-flutter': {
+    name: 'Flutter SDK',
+    tagline: 'A KotomotProvider + context.tr for Flutter — cache-first loading and runtime locale switching.',
+    install: 'flutter pub add kotomot_flutter',
+    repo: 'kotomot-flutter',
   },
 };
 
@@ -82,6 +94,17 @@ export default function SdkDocsPage() {
         </p>
 
         <div className="mt-6 flex items-center justify-center gap-3">
+          {meta && (
+            <a
+              href={`${GH}/${meta.repo}`}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-foreground shadow-xs transition-colors hover:bg-accent"
+            >
+              <ExternalLink className="h-4 w-4" />
+              View on GitHub
+            </a>
+          )}
           <Link
             to="/integrations"
             className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-foreground shadow-xs transition-colors hover:bg-accent"

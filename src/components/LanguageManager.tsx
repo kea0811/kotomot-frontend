@@ -38,7 +38,8 @@ const LanguageManager = memo(function LanguageManager({
   selectedLanguages = [],
 }: LanguageManagerProps) {
   const [languages, setLanguages] = useState<Language[]>([]);
-  const [selected, setSelected] = useState<Set<string>>(new Set(selectedLanguages));
+  // English is always the source language, so it's always selected.
+  const [selected, setSelected] = useState<Set<string>>(new Set([...selectedLanguages, 'en']));
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -89,13 +90,14 @@ const LanguageManager = memo(function LanguageManager({
     }
   }, [isOpen, fetchLanguages]);
 
-  // Update selected when prop changes
+  // Update selected when prop changes (English always stays selected).
   useEffect(() => {
-    setSelected(new Set(selectedLanguages));
+    setSelected(new Set([...selectedLanguages, 'en']));
   }, [selectedLanguages]);
 
   // Memoize toggle function to prevent recreation on each render
   const toggleLanguage = useCallback((code: string) => {
+    if (code === 'en') return; // English is the required source language — can't be removed
     setSelected(prev => {
       const newSelected = new Set(prev);
       if (newSelected.has(code)) {
@@ -220,17 +222,28 @@ const LanguageManager = memo(function LanguageManager({
               </div>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                {filteredLanguages.map((language) => (
+                {filteredLanguages.map((language) => {
+                  const isSource = language.code === 'en';
+                  const isSelected = selected.has(language.code) || isSource;
+                  return (
                   <button
                     key={language.code}
                     onClick={() => toggleLanguage(language.code)}
+                    disabled={isSource}
+                    title={isSource ? 'English is the source language (required)' : undefined}
                     className={`relative p-3 rounded-lg border-2 transition-all ${
-                      selected.has(language.code)
+                      isSelected
                         ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
                         : 'border-border hover:border-brand/40'
-                    }`}
+                    } ${isSource ? 'cursor-default' : ''}`}
                   >
-                    {selected.has(language.code) && (
+                    {isSource ? (
+                      <div className="absolute top-2 right-2">
+                        <span className="rounded-full bg-brand/20 px-2 py-0.5 text-[10px] font-semibold text-brand">
+                          Source
+                        </span>
+                      </div>
+                    ) : isSelected && (
                       <div className="absolute top-2 right-2">
                         <div className="w-5 h-5 bg-brand rounded-full flex items-center justify-center">
                           <Check className="w-3 h-3 text-white" />
@@ -257,7 +270,8 @@ const LanguageManager = memo(function LanguageManager({
                       </span>
                     )}
                   </button>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

@@ -10,6 +10,7 @@ import {
 import { pageVariants, fadeInVariants } from '@/lib/motion';
 import { ActivityFormatter } from '@/components/ActivityFormatter';
 import { createClient } from '@/lib/supabase/client';
+import { authenticatedFetch } from '@/lib/utils/api-client';
 import { useNavigate } from 'react-router-dom';
 import Select from '@/components/ui/CustomSelect';
 
@@ -46,7 +47,7 @@ export default function ActivityPage() {
       params.append('limit', pagination.limit.toString());
       params.append('offset', pagination.offset.toString());
 
-      const response = await fetch(`/api/activities?${params.toString()}`);
+      const response = await authenticatedFetch(`/api/activities?${params.toString()}`);
       const result = await response.json();
 
       if (result.success) {
@@ -75,7 +76,7 @@ export default function ActivityPage() {
       params.append('limit', pagination.limit.toString());
       params.append('offset', (pagination.offset + pagination.limit).toString());
 
-      const response = await fetch(`/api/activities?${params.toString()}`);
+      const response = await authenticatedFetch(`/api/activities?${params.toString()}`);
       const result = await response.json();
 
       if (result.success) {
