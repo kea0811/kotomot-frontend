@@ -16,8 +16,6 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
-const allowSignUp = import.meta.env.VITE_ALLOW_SIGN_UP === 'true';
-
 export default function LoginPage() {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
@@ -186,15 +184,6 @@ export default function LoginPage() {
                 </button>
               </form>
 
-              {/* Sign up */}
-              {allowSignUp && (
-                <p className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
-                  Don't have an account?
-                  <Link to="/signup" className="font-medium text-brand hover:opacity-80">
-                    Sign up
-                  </Link>
-                </p>
-              )}
             </div>
           )}
         </div>

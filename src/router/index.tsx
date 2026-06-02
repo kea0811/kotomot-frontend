@@ -8,7 +8,6 @@ const AppLayout = lazy(() => import('@/components/layout/AppLayout'))
 
 // Lazy-loaded auth pages
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'))
-const SignupPage = lazy(() => import('@/pages/auth/SignupPage'))
 // Lazy-loaded app pages
 const DashboardPage = lazy(() => import('@/pages/DashboardPage'))
 const ProjectsPage = lazy(() => import('@/pages/projects/ProjectsPage'))
@@ -63,14 +62,6 @@ export const router = createBrowserRouter([
         element: (
           <SuspenseWrapper>
             <LoginPage />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: '/signup',
-        element: (
-          <SuspenseWrapper>
-            <SignupPage />
           </SuspenseWrapper>
         ),
       },
