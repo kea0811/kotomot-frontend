@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { motion } from 'framer-motion';
 import { createClient } from '@/lib/supabase/client';
 import { pageVariants } from '@/lib/motion';
-import { AlertCircle, Languages, Loader2, Github } from 'lucide-react';
+import { AlertCircle, Languages, Loader2 } from 'lucide-react';
 import { AuthBrandPanel } from '@/components/auth/AuthBrandPanel';
 
 const loginSchema = z.object({
@@ -61,20 +61,6 @@ export default function LoginPage() {
       setError('An unexpected error occurred');
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleGitHub = async () => {
-    if (!supabase) return;
-    setError(null);
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'github',
-        options: { redirectTo: `${window.location.origin}/projects` },
-      });
-      if (error) setError(error.message);
-    } catch {
-      setError('GitHub sign-in is not available.');
     }
   };
 
@@ -199,23 +185,6 @@ export default function LoginPage() {
                   {isLoading ? 'Signing in…' : 'Sign in'}
                 </button>
               </form>
-
-              {/* Divider */}
-              <div className="flex items-center gap-3">
-                <span className="h-px flex-1 bg-border" />
-                <span className="text-xs text-muted-foreground">or</span>
-                <span className="h-px flex-1 bg-border" />
-              </div>
-
-              {/* GitHub SSO */}
-              <button
-                type="button"
-                onClick={handleGitHub}
-                className="flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-border bg-background text-sm font-medium text-foreground transition-colors hover:bg-accent"
-              >
-                <Github className="h-4 w-4" />
-                Continue with GitHub
-              </button>
 
               {/* Sign up */}
               {allowSignUp && (
