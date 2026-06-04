@@ -49,6 +49,7 @@ export default function LandingPage() {
           <nav className="flex items-center gap-6 text-sm">
             <a href="#features" className="hidden text-muted-foreground transition-colors hover:text-foreground sm:block">Features</a>
             <a href="#sdks" className="hidden text-muted-foreground transition-colors hover:text-foreground sm:block">SDKs</a>
+            <Link to="/docs" className="hidden text-muted-foreground transition-colors hover:text-foreground sm:block">Docs</Link>
             <a href="#opensource" className="hidden text-muted-foreground transition-colors hover:text-foreground sm:block">Open source</a>
             <a href={`${GH}/kotomot-frontend`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-muted-foreground transition-colors hover:text-foreground">
               <Github className="h-4 w-4" /> GitHub
@@ -162,6 +163,7 @@ export default function LandingPage() {
                 <p className="mt-2 flex-1 text-sm text-muted-foreground">{s.desc}</p>
                 <pre className="mt-4 overflow-x-auto rounded-lg bg-muted px-3 py-2 text-xs text-foreground">{s.install}</pre>
                 <div className="mt-3 flex gap-4 text-xs">
+                  <Link to={`/docs/${s.repo}`} className="font-medium text-brand hover:underline">Docs</Link>
                   {s.pkg && (
                     <a href={s.pkg.url} target="_blank" rel="noreferrer" className="font-medium text-brand hover:underline">{s.pkg.label}</a>
                   )}
@@ -174,13 +176,18 @@ export default function LandingPage() {
 {`import { KotoProvider } from 'kotomot-react';
 
 <KotoProvider
-  apiUrl="https://api.kotomot.app/v1/translations"
   apiKey={import.meta.env.VITE_KOTOMOT_KEY}   // generated in the dashboard
   projectId="your-project"
+  defaultLocale="en"
 >
   <App />
 </KotoProvider>`}
           </pre>
+          <div className="mt-6">
+            <Link to="/docs" className="inline-flex items-center gap-1.5 text-sm font-medium text-brand hover:underline">
+              Read the full SDK docs <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
         </div>
       </section>
 

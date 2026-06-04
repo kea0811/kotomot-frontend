@@ -59,6 +59,24 @@ export const router = createBrowserRouter([
     ),
   },
 
+  // Public SDK documentation (linked from the landing page)
+  {
+    path: '/docs',
+    element: (
+      <SuspenseWrapper>
+        <SdkDocsPage />
+      </SuspenseWrapper>
+    ),
+  },
+  {
+    path: '/docs/:sdk',
+    element: (
+      <SuspenseWrapper>
+        <SdkDocsPage />
+      </SuspenseWrapper>
+    ),
+  },
+
   // Guest routes (redirect to /projects if already logged in)
   {
     element: <GuestGuard />,
@@ -234,14 +252,6 @@ export const router = createBrowserRouter([
             element: (
               <SuspenseWrapper>
                 <ProfilePage />
-              </SuspenseWrapper>
-            ),
-          },
-          {
-            path: '/docs/:sdk',
-            element: (
-              <SuspenseWrapper>
-                <SdkDocsPage />
               </SuspenseWrapper>
             ),
           },
