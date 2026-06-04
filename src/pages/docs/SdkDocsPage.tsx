@@ -570,7 +570,7 @@ export default function SdkDocsPage() {
     <div className="min-h-screen bg-background text-foreground">
       {/* Public header */}
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-4xl items-center justify-between px-6">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           <Link to="/" className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand shadow-brand">
               <Languages className="h-[18px] w-[18px] text-brand-foreground" />
@@ -584,7 +584,7 @@ export default function SdkDocsPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-4xl px-6 py-10">
+      <main className="mx-auto max-w-6xl px-6 py-10">
         {/* SDK switcher */}
         <div className="mb-8 flex flex-wrap items-center gap-2">
           <Link to="/" className="mr-1 inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
@@ -607,7 +607,7 @@ export default function SdkDocsPage() {
       </main>
 
       <footer className="border-t border-border">
-        <div className="mx-auto flex max-w-4xl items-center justify-between px-6 py-6 text-sm text-muted-foreground">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6 text-sm text-muted-foreground">
           <span>Kotomot — open-source translation management.</span>
           <Link to="/login" className="transition-colors hover:text-foreground">Sign in</Link>
         </div>
