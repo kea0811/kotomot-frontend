@@ -115,7 +115,7 @@ function Greeting() {
         title: 'Translating',
         items: [
           { sig: 't(key, fallback?)', desc: 'Looks up a dot-notation key. 2nd arg is a fallback string (not interpolation).' },
-          { sig: 'ti(key, params, fallback?)', desc: 'Interpolation — replaces {{var}} (double-brace) placeholders.' },
+          { sig: 'ti(key, params, fallback?)', desc: 'Interpolation — replaces {var} and {{var}} placeholders.' },
           { sig: 'tp(key, count, params?)', desc: 'Pluralization — picks key.zero / key.one / key.other and injects count.' },
         ],
       },
@@ -138,7 +138,7 @@ function Greeting() {
     caching:
       'IndexedDB (via idb). On load, cached strings are served instantly, then GET /version is compared and the bundle is only refetched when the version changed. The selected locale is persisted to localStorage.',
     notes: [
-      'Interpolation is double-brace ({{var}}) via ti() — t()’s second argument is a fallback string, not params.',
+      'Use ti() for interpolation ({var} or {{var}}); t()’s second argument is a fallback string, not params.',
       'apiUrl accepts the bare host (https://api.kotomot.app); the SDK appends /v1/translations for you.',
     ],
   },
@@ -233,36 +233,31 @@ class MyApp extends StatelessWidget {
     name: 'Node.js SDK',
     pkg: 'kotomot-node-sdk',
     lang: 'Node.js · TypeScript (CJS)',
-    status: 'Beta',
+    status: 'Stable',
     tagline:
-      'A server-side REST client for reading and writing translations — for SSR, build tooling, and CLIs. Returns raw maps (no runtime t()).',
+      'A server-side client for reading published translations and importing them back — for SSR, build tooling, and CLIs.',
     install: 'npm install kotomot-node-sdk',
     npm: 'https://www.npmjs.com/package/kotomot-node-sdk',
     repo: 'kotomot-node-sdk',
     quickStart: `const { KotoClient } = require('kotomot-node-sdk');
 
 const koto = new KotoClient({
-  apiKey: process.env.KOTOMOT_API_KEY,
-  baseUrl: 'https://api.kotomot.app',   // override the default!
+  apiKey: process.env.KOTOMOT_API_KEY,   // baseUrl defaults to https://api.kotomot.app
 });
 
-// Read a locale (optionally scoped to a namespace)
+// A flat map: { 'home.hero.title': 'Welcome', ... }
 const translations = await koto.getTranslations('your-project', {
   locale: 'en',
-  namespace: 'common',
+  namespace: 'common',   // optional
 });
 
-// Write back from a script / CLI
-await koto.batchUpdateTranslations({
-  projectId: 'your-project',
-  locale: 'fr',
-  translations: { 'home.hero.title': 'Bonjour' },
-});`,
+// Supported locales (for a picker)
+const { defaultLocale, locales } = await koto.getLocales('your-project');`,
     config: {
       title: 'new KotoClient(config)',
       rows: [
         { name: 'apiKey', type: 'string', required: true, desc: 'Throws if missing.' },
-        { name: 'baseUrl', type: 'string', default: 'https://api.koto.dev', desc: 'Override to https://api.kotomot.app.' },
+        { name: 'baseUrl', type: 'string', default: 'https://api.kotomot.app', desc: 'API host.' },
         { name: 'timeout', type: 'number (ms)', default: '30000' },
         { name: 'retryAttempts', type: 'number', default: '3' },
         { name: 'retryDelay', type: 'number (ms)', default: '1000' },
@@ -274,37 +269,31 @@ await koto.batchUpdateTranslations({
       {
         title: 'Read',
         items: [
-          { sig: 'getTranslations(projectId, { locale, namespace?, fallbackLocale?, includeMetadata?, skipEmpty? })', desc: 'Fetch a locale’s map (cached).' },
-          { sig: 'getProjectInfo(projectId)', desc: 'Locales, default locale, namespaces. (Throws on failure.)' },
-          { sig: 'exportTranslations(projectId, locale, format?)', desc: "json | yaml | csv | xliff." },
+          { sig: 'getTranslations(projectId, { locale, namespace?, environment? })', desc: 'Published map for a locale → { keyPath: value }.' },
+          { sig: 'getVersion(projectId)', desc: 'Current published version string (or null).' },
+          { sig: 'getLocales(projectId)', desc: 'Supported locales (source-first) for a picker.' },
         ],
       },
       {
-        title: 'Write',
+        title: 'Write (needs write:translations)',
         items: [
-          { sig: 'updateTranslation({ projectId, keyPath, locale, translation, namespace? })', desc: 'Update one string.' },
-          { sig: 'batchUpdateTranslations({ projectId, locale, translations, namespace?, replace? })', desc: 'Bulk update a locale.' },
-          { sig: 'createTranslationKey(projectId, keyPath, translations, namespace?)', desc: 'Add a new key.' },
-          { sig: 'deleteTranslationKey(projectId, keyPath, namespace?)', desc: 'Remove a key.' },
-          { sig: 'importTranslations(projectId, locale, data, format?, options?)', desc: 'Import a file’s worth.' },
+          { sig: 'importTranslations(projectId, { format, content, namespace?, conflictResolution?, createMissingKeys? })', desc: 'Import a JSON/CSV file’s worth of translations.' },
         ],
       },
       {
         title: 'Also exported',
         items: [
           { sig: 'setLogger(logger)', desc: 'Custom logging.' },
-          { sig: 'MemoryCache · CacheManager', desc: 'Building blocks for the cache layer.' },
+          { sig: 'MemoryCache · CacheManager', desc: 'Cache building blocks.' },
         ],
       },
     ],
     caching:
-      'In-process memory cache by default (1h TTL); swap in Redis (cache.storage = "redis") or a custom CacheStorage. Writes invalidate the affected locale.',
+      'In-process memory cache by default (1h TTL); swap in Redis (cache.storage = "redis") or a custom CacheStorage. Imports clear the cache.',
     notes: [
-      'The exported class is KotoClient (the README’s “KotomotClient” is wrong).',
-      'Set baseUrl to https://api.kotomot.app — the built-in default points elsewhere.',
+      'The exported class is KotoClient.',
+      'Reads return the published set; environment pins reads to the version deployed to that environment.',
       'Server-side only: depends on node-fetch and ships CommonJS (not browser/edge).',
-      'No client-side t()/interpolation — it returns the translation map; format it yourself.',
-      'Most methods resolve to { success, data | error } instead of throwing (getProjectInfo is the exception).',
     ],
   },
 
@@ -312,64 +301,71 @@ await koto.batchUpdateTranslations({
     name: 'React Native SDK',
     pkg: 'kotomot-react-native',
     lang: 'React Native',
-    status: 'Beta',
+    status: 'Stable',
     tagline:
-      'An authenticated fetch client with AsyncStorage-persisted keys. Currently low-level: you call the API and render the map yourself (no built-in t() yet).',
+      'A KotoProvider + useTranslation() hook — runtime locale switching and AsyncStorage caching with version-based revalidation.',
     install: 'npm install kotomot-react-native @react-native-async-storage/async-storage',
     npm: 'https://www.npmjs.com/package/kotomot-react-native',
     repo: 'kotomot-react-native',
-    quickStart: `import { KotoProvider, useKoto } from 'kotomot-react-native';
+    quickStart: `import { KotoProvider, useTranslation } from 'kotomot-react-native';
 
 export default function App() {
   return (
-    <KotoProvider config={{ baseUrl: 'https://api.kotomot.app' }}>
-      <Screen />
+    <KotoProvider
+      apiKey={process.env.KOTOMOT_API_KEY}   // generated in the dashboard
+      projectId="your-project"
+      defaultLocale="en"
+    >
+      <Home />
     </KotoProvider>
   );
 }
 
-function Screen() {
-  const { setApiKey, isAuthenticated, makeRequest } = useKoto();
-
-  // Authenticate once — persisted in AsyncStorage. Never hardcode in real apps.
-  // await setApiKey('YOUR_KOTOMOT_KEY');
-
-  const load = async () => {
-    // The public endpoint authenticates via the x-api-key header:
-    const data = await makeRequest(
-      '/v1/translations?projectId=your-project&locale=en',
-      { headers: { 'x-api-key': 'YOUR_KOTOMOT_KEY' } },
-    );
-    // data.translations -> { keyPath: value }
-  };
-
-  return null;
+function Home() {
+  const { t, ti, locale, setLocale, loading } = useTranslation();
+  if (loading) return <ActivityIndicator />;
+  return (
+    <View>
+      <Text>{t('home.hero.title')}</Text>
+      <Text>{ti('home.greeting', { name: 'Jane' })}</Text>   {/* {name} or {{name}} */}
+      <Button title="日本語" onPress={() => setLocale('ja')} />
+    </View>
+  );
 }`,
     config: {
-      title: '<KotoProvider config={…}>',
+      title: '<KotoProvider> props',
       rows: [
-        { name: 'baseUrl', type: 'string', default: 'https://api.koto.dev', desc: 'Override to https://api.kotomot.app.' },
-        { name: 'headers', type: 'Record<string,string>', desc: 'Declared but not currently applied to requests.' },
-        { name: 'timeout', type: 'number', desc: 'Declared but not currently enforced.' },
+        { name: 'apiKey', type: 'string', required: true, desc: 'A scoped key from the dashboard.' },
+        { name: 'projectId', type: 'string', required: true, desc: 'Project slug or ID.' },
+        { name: 'defaultLocale', type: 'string', required: true, desc: 'Initial locale (a persisted choice overrides it).' },
+        { name: 'apiUrl', type: 'string', default: 'https://api.kotomot.app', desc: 'Bare host or full endpoint.' },
+        { name: 'namespace', type: 'string', desc: 'Optional namespace filter.' },
       ],
     },
     api: [
       {
-        title: 'useKoto()',
+        title: 'Hooks',
         items: [
-          { sig: 'setApiKey(key) · removeApiKey()', desc: 'Persist / clear the key in AsyncStorage.' },
-          { sig: 'makeRequest(endpoint, options?)', desc: 'Authenticated fetch against baseUrl + endpoint; returns parsed JSON.' },
-          { sig: 'baseUrl · setBaseUrl(url)', desc: 'Read / change the base URL (in-memory).' },
-          { sig: 'isAuthenticated · isLoading · error', desc: 'Status flags.' },
+          { sig: 'useTranslation()', desc: 'Returns { t, ti, tp, locale, setLocale, loading, availableLocales, refresh }.' },
+          { sig: 'useKoto()', desc: 'Full context: adds translations, error, version.' },
+        ],
+      },
+      {
+        title: 'Translating',
+        items: [
+          { sig: 't(key, fallback?)', desc: 'Look up a dot-notation key.' },
+          { sig: 'ti(key, params, fallback?)', desc: 'Interpolation — supports {var} and {{var}}.' },
+          { sig: 'tp(key, count, params?)', desc: 'Pluralization (key.zero / .one / .other).' },
+          { sig: 'setLocale(code) · availableLocales', desc: 'Switch language (persisted); picker metadata from /v1/locales.' },
         ],
       },
     ],
     caching:
-      'AsyncStorage stores only the API key (@koto:apiKey). There is no translation cache yet — every makeRequest is a live fetch.',
+      'AsyncStorage, one entry per locale. Cache-first: cached strings render immediately, then the published version is checked and refetched only if it changed. The selected locale persists across launches.',
     notes: [
-      'This SDK is a low-level fetch client today — no t(), locale, or namespace handling. Call makeRequest(\'/v1/translations?…\') and render the returned map yourself.',
-      'Override baseUrl to https://api.kotomot.app (the default points elsewhere).',
-      'The /v1/translations endpoint authenticates via the x-api-key header — pass it in makeRequest options.headers (makeRequest also sends an Authorization header, which the endpoint ignores).',
+      'Requires the @react-native-async-storage/async-storage peer dependency.',
+      'Interpolation supports both {var} and {{var}}.',
+      'apiUrl accepts the bare host; the SDK appends /v1/translations.',
     ],
   },
 };
