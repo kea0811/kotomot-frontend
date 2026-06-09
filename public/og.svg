@@ -1,0 +1,72 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0b0b14"/>
+      <stop offset="1" stop-color="#080810"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0" r="0.8">
+      <stop offset="0" stop-color="#6366f1" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#6366f1" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="mark" x1="0" y1="0" x2="84" y2="84" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#818cf8"/>
+      <stop offset="1" stop-color="#4f46e5"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+
+  <!-- faint grid -->
+  <g stroke="#ffffff" stroke-opacity="0.04">
+    <path d="M0 158.5H1200M0 315.5H1200M0 472.5H1200"/>
+    <path d="M240.5 0V630M480.5 0V630M720.5 0V630M960.5 0V630"/>
+  </g>
+
+  <!-- logo + wordmark -->
+  <g transform="translate(80,74)">
+    <rect width="84" height="84" rx="20" fill="url(#mark)"/>
+    <g transform="translate(18,18) scale(2)" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path d="m5 8 6 6"/>
+      <path d="m4 14 6-6 2-3"/>
+      <path d="M2 5h12"/>
+      <path d="M7 2h1"/>
+      <path d="m22 22-5-10-5 10"/>
+      <path d="M14 18h6"/>
+    </g>
+    <text x="104" y="56" font-family="Helvetica, Arial, sans-serif" font-size="42" font-weight="700" fill="#ffffff">Kotomot</text>
+  </g>
+
+  <!-- headline -->
+  <text x="80" y="320" font-family="Helvetica, Arial, sans-serif" font-size="78" font-weight="700" fill="#ffffff">Ship every language,</text>
+  <text x="80" y="410" font-family="Helvetica, Arial, sans-serif" font-size="78" font-weight="700" fill="#ffffff">faster.</text>
+
+  <!-- subtitle -->
+  <text x="82" y="476" font-family="Helvetica, Arial, sans-serif" font-size="30" font-weight="400" fill="#9aa0b4">Open-source translation-management platform</text>
+
+  <!-- footer -->
+  <g font-family="Helvetica, Arial, sans-serif">
+    <text x="82" y="566" font-size="26" font-weight="600" fill="#ffffff">kotomot.app</text>
+    <text x="232" y="566" font-size="26" font-weight="400" fill="#6b7280">· Open-source · MIT · SDKs &amp; REST API</text>
+  </g>
+
+  <!-- decorative locale panel -->
+  <g transform="translate(792,150)">
+    <rect width="328" height="262" rx="20" fill="#ffffff" fill-opacity="0.04" stroke="#ffffff" stroke-opacity="0.10"/>
+    <g font-family="Helvetica, Arial, sans-serif" font-size="24" fill="#d1d5db">
+      <text x="28" y="56">English</text>
+      <text x="28" y="104">Francais</text>
+      <text x="28" y="152">Espanol</text>
+      <text x="28" y="200">Deutsch</text>
+      <text x="28" y="248">Portugues</text>
+    </g>
+    <g stroke="#34d399" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M276 42l8 8 14-16"/>
+      <path d="M276 90l8 8 14-16"/>
+      <path d="M276 138l8 8 14-16"/>
+      <path d="M276 186l8 8 14-16"/>
+    </g>
+    <circle cx="287" cy="240" r="9" fill="none" stroke="#fbbf24" stroke-width="3"/>
+    <path d="M287 234v6l4 3" stroke="#fbbf24" stroke-width="3" fill="none" stroke-linecap="round"/>
+  </g>
+</svg>
