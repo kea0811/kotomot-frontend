@@ -5,6 +5,7 @@ import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import NavigationProgress from '@/components/ui/NavigationProgress';
 import { apiClient, handleApiResponse } from '@/lib/utils/api-client';
 import { supabase } from '@/lib/supabase';
+import { isDemo, exitDemo } from '@/lib/demo-session';
 import {
   LayoutGrid,
   FolderOpen,
@@ -210,6 +211,12 @@ export default function AppLayout({ children }: { children?: React.ReactNode } =
   }, [fetchCounts]);
 
   const handleLogout = async () => {
+    // Demo sessions aren't real Supabase sessions — just drop the demo token.
+    if (isDemo()) {
+      exitDemo();
+      window.location.href = '/';
+      return;
+    }
     try {
       await supabase.auth.signOut();
     } catch (error) {
@@ -218,6 +225,11 @@ export default function AppLayout({ children }: { children?: React.ReactNode } =
       // Always leave the authenticated area, even if signOut errored.
       navigate('/login', { replace: true });
     }
+  };
+
+  const handleExitDemo = () => {
+    exitDemo();
+    window.location.href = '/';
   };
 
   const isActive = (href: string) => {
@@ -399,6 +411,19 @@ export default function AppLayout({ children }: { children?: React.ReactNode } =
           sidebarOpen ? 'lg:ml-[264px]' : 'lg:ml-[76px]'
         )}
       >
+        {/* Demo banner */}
+        {isDemo() && (
+          <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 border-b border-brand/20 bg-brand/10 px-4 py-2 text-center text-sm">
+            <span className="font-medium text-foreground">You're exploring a live demo</span>
+            <span className="text-muted-foreground">
+              — changes save to your private sandbox and reset automatically.
+            </span>
+            <button onClick={handleExitDemo} className="font-medium text-brand hover:opacity-80">
+              Exit demo
+            </button>
+          </div>
+        )}
+
         {/* Top bar */}
         <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-xl">
           <div className="flex h-14 items-center justify-between px-4 sm:px-6">

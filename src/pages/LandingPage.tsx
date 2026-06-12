@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import TryDemoButton from '@/components/TryDemoButton';
 import {
   Languages,
   Github,
@@ -83,13 +84,12 @@ export default function LandingPage() {
               locales, versions and environments — then ship them to any app with a typed SDK.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
-              <Link to="/login" className="inline-flex h-11 items-center gap-2 rounded-lg bg-brand px-5 text-sm font-medium text-brand-foreground shadow-sm transition-all hover:bg-brand/90 active:scale-[0.99]">
-                Open dashboard <ArrowRight className="h-4 w-4" />
-              </Link>
+              <TryDemoButton />
               <a href={`${GH}/kotomot-frontend`} target="_blank" rel="noreferrer" className="inline-flex h-11 items-center gap-2 rounded-lg border border-border bg-background px-5 text-sm font-medium transition-colors hover:bg-accent">
                 <Github className="h-4 w-4" /> View on GitHub
               </a>
             </div>
+            <p className="mt-3 text-xs text-muted-foreground">No sign-up — get a private, fully-editable sandbox that resets on its own.</p>
             <p className="mt-6 text-xs text-muted-foreground">
               <span className="font-medium text-foreground">Kotomot</span> — <span className="italic">koto</span> (言, Japanese for “word”) + <span className="italic">mot</span> (French for “word”). Words meeting words: that is translation.
             </p>

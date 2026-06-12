@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/client';
 import { pageVariants } from '@/lib/motion';
 import { AlertCircle, Languages, Loader2 } from 'lucide-react';
 import { AuthBrandPanel } from '@/components/auth/AuthBrandPanel';
+import TryDemoButton from '@/components/TryDemoButton';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Invalid email address' }),
@@ -184,6 +185,17 @@ export default function LoginPage() {
                 </button>
               </form>
 
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                <span className="h-px flex-1 bg-border" />
+                no account?
+                <span className="h-px flex-1 bg-border" />
+              </div>
+              <div className="flex flex-col items-center gap-1 text-center">
+                <TryDemoButton variant="link" />
+                <span className="text-xs text-muted-foreground">
+                  A private, fully-editable sandbox — no sign-up.
+                </span>
+              </div>
             </div>
           )}
         </div>
