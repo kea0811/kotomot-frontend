@@ -98,6 +98,11 @@ function Greeting() {
           default: 'https://api.kotomot.app',
           desc: 'Bare host or full /v1/translations endpoint — both work.',
         },
+        {
+          name: 'initialTranslations',
+          type: 'object',
+          desc: 'SSR: server-fetched map to render immediately (no flash); client revalidates.',
+        },
       ],
     },
     api: [
@@ -140,6 +145,7 @@ function Greeting() {
     notes: [
       'Use ti() for interpolation ({var} or {{var}}); t()’s second argument is a fallback string, not params.',
       'apiUrl accepts the bare host (https://api.kotomot.app); the SDK appends /v1/translations for you.',
+      'SSR-ready: fetch on the server with kotomot-node-sdk and pass initialTranslations — renders translated HTML, no flash. Storage no-ops without a browser.',
     ],
   },
 
